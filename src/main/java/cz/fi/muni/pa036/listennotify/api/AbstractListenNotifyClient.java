@@ -1,8 +1,12 @@
 package cz.fi.muni.pa036.listennotify.api;
 
 import com.google.gson.Gson;
+import java.io.FileInputStream;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * LISTEN / NOTIFY client which implements some of the default behaviours of its
@@ -10,9 +14,19 @@ import java.sql.Statement;
  */
 public abstract class AbstractListenNotifyClient implements ListenNotifyClient {
 
-    private Gson gson = new Gson();
+    private final Gson gson = new Gson();
+    private final Map<EventType, PreparedStatement> stmtCache = new HashMap<>();
+    private static final String TEXT_TABLE_NAME = "text";
+    private static final String BINARY_TABLE_NAME = "binary";
+    private static final String INSERT_STMT = "INSERT INTO %s VALUES (?, ?);";
 
+    public AbstractListenNotifyClient() {
+        stmtCache.put(EventType.INSERT_TEXT, createPreparedStatement(String.format(INSERT_STMT, TEXT_TABLE_NAME)));
+        stmtCache.put(EventType.INSERT_BINARY, createPreparedStatement(String.format(INSERT_STMT, BINARY_TABLE_NAME)));
+    }
+    
     protected abstract Statement createStatement();
+    protected abstract PreparedStatement createPreparedStatement(String query);
 
     /**
      * Return a raw string directly coming from the database. The expected
@@ -31,6 +45,22 @@ public abstract class AbstractListenNotifyClient implements ListenNotifyClient {
         try ( Statement statement = createStatement()) {
             statement.execute(sqlStmt);
         }
+    }
+    
+    @Override
+    public void insertText(int id, String text) throws SQLException {
+        PreparedStatement ps = stmtCache.get(EventType.INSERT_TEXT);
+        ps.setInt(1, id);
+        ps.setString(2, text);
+        ps.executeUpdate();
+    }
+    
+    @Override
+    public void insertBinary(int id, FileInputStream fis) throws SQLException {
+        PreparedStatement ps = stmtCache.get(EventType.INSERT_BINARY);
+        ps.setInt(1, id);
+        ps.setBinaryStream(2, fis);
+        ps.executeUpdate();
     }
 
     @Override

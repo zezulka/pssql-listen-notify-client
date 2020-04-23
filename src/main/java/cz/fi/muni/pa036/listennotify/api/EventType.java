@@ -7,6 +7,10 @@ package cz.fi.muni.pa036.listennotify.api;
  * @author Miloslav Zezulka
  */
 public enum EventType {
-    INSERT,
-    DELETE;
+    INSERT_BINARY,
+    INSERT_TEXT,
+    UPDATE_BINARY,
+    UPDATE_TEXT,
+    DELETE_BINARY,
+    DELETE_TEXT;
 }
