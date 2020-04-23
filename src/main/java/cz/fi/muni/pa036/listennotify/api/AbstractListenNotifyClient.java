@@ -19,11 +19,7 @@ public abstract class AbstractListenNotifyClient implements ListenNotifyClient {
     private static final String TEXT_TABLE_NAME = "text";
     private static final String BINARY_TABLE_NAME = "binary";
     private static final String INSERT_STMT = "INSERT INTO %s VALUES (?, ?);";
-
-    public AbstractListenNotifyClient() {
-        stmtCache.put(EventType.INSERT_TEXT, createPreparedStatement(String.format(INSERT_STMT, TEXT_TABLE_NAME)));
-        stmtCache.put(EventType.INSERT_BINARY, createPreparedStatement(String.format(INSERT_STMT, BINARY_TABLE_NAME)));
-    }
+    private boolean preparedStmtsReady = false;
     
     protected abstract Statement createStatement();
     protected abstract PreparedStatement createPreparedStatement(String query);
@@ -46,9 +42,19 @@ public abstract class AbstractListenNotifyClient implements ListenNotifyClient {
             statement.execute(sqlStmt);
         }
     }
+
+    private void createPreparedStatementsIfNecessary() {
+        if(preparedStmtsReady) {
+            return;
+        }
+        stmtCache.put(EventType.INSERT_TEXT, createPreparedStatement(String.format(INSERT_STMT, TEXT_TABLE_NAME)));
+        stmtCache.put(EventType.INSERT_BINARY, createPreparedStatement(String.format(INSERT_STMT, BINARY_TABLE_NAME)));
+        preparedStmtsReady = true;
+    }
     
     @Override
     public void insertText(int id, String text) throws SQLException {
+        createPreparedStatementsIfNecessary();
         PreparedStatement ps = stmtCache.get(EventType.INSERT_TEXT);
         ps.setInt(1, id);
         ps.setString(2, text);
@@ -57,6 +63,7 @@ public abstract class AbstractListenNotifyClient implements ListenNotifyClient {
     
     @Override
     public void insertBinary(int id, FileInputStream fis) throws SQLException {
+        createPreparedStatementsIfNecessary();
         PreparedStatement ps = stmtCache.get(EventType.INSERT_BINARY);
         ps.setInt(1, id);
         ps.setBinaryStream(2, fis);
