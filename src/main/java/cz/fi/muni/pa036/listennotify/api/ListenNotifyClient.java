@@ -4,7 +4,10 @@ import java.io.FileInputStream;
 import java.sql.SQLException;
 
 /**
- *
+ * Note: it is user's responsibility to ensure that ids are all valid (i.e.
+ * when inserting, id is not already present in the table and when updating or
+ * inserting, the id exists).
+ * 
  * @author Miloslav Zezulka
  */
 public interface ListenNotifyClient {
@@ -42,6 +45,44 @@ public interface ListenNotifyClient {
      * @throws SQLException 
      */
     void insertBinary(int id, FileInputStream text) throws SQLException;
+
+    /**
+     * 
+     * Update text data with id {@code id}.
+     * 
+     * @param id id existing in the text table
+     * @param text message to be stored in the table
+     * @throws SQLException 
+     */
+    void updateText(int id, String text) throws SQLException;
+    
+        /**
+     * 
+     * Updates binary stream with id {@code id} into the database.
+     * 
+     * @param id id existing in the binary table
+     * @param text file of the binary data to be stored
+     * @throws SQLException 
+     */
+    void updateBinary(int id, FileInputStream text) throws SQLException;
+    
+    /**
+     * 
+     * Delete a row from the text table with id {@code id}. As a side effect,
+     * if any row in the binary table references with its FK this id, it will
+     * be deleted as well.
+     * 
+     * @param id id must exist in the database
+     * @throws SQLException 
+     */
+    void deleteText(int id) throws SQLException;
+    
+    /**
+     * Delete a row from the binary table with id {@code id}.
+     * @param id
+     * @throws SQLException 
+     */
+    void deleteBinary(int id) throws SQLException;
     
     /**
      * Inform db that the client wishes to accept events of type {@code type}

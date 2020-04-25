@@ -19,6 +19,8 @@ public abstract class AbstractListenNotifyClient implements ListenNotifyClient {
     private static final String TEXT_TABLE_NAME = "text";
     private static final String BINARY_TABLE_NAME = "binary";
     private static final String INSERT_STMT = "INSERT INTO %s VALUES (?, ?);";
+    private static final String DELETE_STMT = "DELETE FROM %s WHERE id=?";
+    private static final String UPDATE_STMT = "UPDATE %s SET %s = ? WHERE id=?";
     private boolean preparedStmtsReady = false;
     
     protected abstract Statement createStatement();
@@ -47,8 +49,16 @@ public abstract class AbstractListenNotifyClient implements ListenNotifyClient {
         if(preparedStmtsReady) {
             return;
         }
+        // prepared statements for the text table
         stmtCache.put(EventType.INSERT_TEXT, createPreparedStatement(String.format(INSERT_STMT, TEXT_TABLE_NAME)));
+        stmtCache.put(EventType.DELETE_TEXT, createPreparedStatement(String.format(DELETE_STMT, TEXT_TABLE_NAME)));
+        stmtCache.put(EventType.UPDATE_TEXT, createPreparedStatement(String.format(UPDATE_STMT, TEXT_TABLE_NAME, "message")));
+        
+        // prepared statements for the binary table
         stmtCache.put(EventType.INSERT_BINARY, createPreparedStatement(String.format(INSERT_STMT, BINARY_TABLE_NAME)));
+        stmtCache.put(EventType.DELETE_BINARY, createPreparedStatement(String.format(DELETE_STMT, BINARY_TABLE_NAME)));
+        stmtCache.put(EventType.UPDATE_BINARY, createPreparedStatement(String.format(UPDATE_STMT, BINARY_TABLE_NAME, "img")));
+        
         preparedStmtsReady = true;
     }
     
@@ -67,6 +77,40 @@ public abstract class AbstractListenNotifyClient implements ListenNotifyClient {
         PreparedStatement ps = stmtCache.get(EventType.INSERT_BINARY);
         ps.setInt(1, id);
         ps.setBinaryStream(2, fis);
+        ps.executeUpdate();
+    }
+    
+    @Override
+    public void deleteText(int id) throws SQLException {
+        createPreparedStatementsIfNecessary();
+        PreparedStatement ps = stmtCache.get(EventType.DELETE_TEXT);
+        ps.setInt(1, id);
+        ps.executeUpdate();
+    }
+    
+    @Override
+    public void deleteBinary(int id) throws SQLException {
+        createPreparedStatementsIfNecessary();
+        PreparedStatement ps = stmtCache.get(EventType.DELETE_BINARY);
+        ps.setInt(1, id);
+        ps.executeUpdate();
+    }
+    
+    @Override
+    public void updateText(int id, String text) throws SQLException {
+        createPreparedStatementsIfNecessary();
+        PreparedStatement ps = stmtCache.get(EventType.UPDATE_TEXT);
+        ps.setString(1, text);
+        ps.setInt(2, id);
+        ps.executeUpdate();
+    }
+    
+    @Override
+    public void updateBinary(int id, FileInputStream fis) throws SQLException {
+        createPreparedStatementsIfNecessary();
+        PreparedStatement ps = stmtCache.get(EventType.UPDATE_BINARY);
+        ps.setBinaryStream(1, fis);
+        ps.setInt(2, id);
         ps.executeUpdate();
     }
 
