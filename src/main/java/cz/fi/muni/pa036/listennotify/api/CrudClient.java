@@ -7,6 +7,7 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Logger;
 
 /**
  * Client which communicates with the database.
@@ -22,7 +23,7 @@ public abstract class CrudClient extends Thread {
     private final Map<EventType, PreparedStatement> stmtCache = new HashMap<>();
     private boolean preparedStmtsReady = false;
     private static final String TEXT_TABLE_NAME = "text";
-    private static final String BINARY_TABLE_NAME = "binary";
+    private static final String BINARY_TABLE_NAME = "bin";
     private static final String INSERT_STMT = "INSERT INTO %s VALUES (?, ?);";
     private static final String DELETE_STMT = "DELETE FROM %s WHERE id=?";
     private static final String UPDATE_STMT = "UPDATE %s SET %s = ? WHERE id=?";
@@ -139,6 +140,7 @@ public abstract class CrudClient extends Thread {
      * @param type type of event the user wishes to listen to
      */
     public void registerEventListener(EventType type) {
+        Logger.getGlobal().info("Registering event listening for " + type);
         try {
             if(type == EventType.DELETE_BINARY || type == EventType.INSERT_BINARY || type == EventType.UPDATE_BINARY) {
                 executeStatement("LISTEN q_event_bin");

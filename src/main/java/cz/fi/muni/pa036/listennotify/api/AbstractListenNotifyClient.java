@@ -12,11 +12,11 @@ import java.util.stream.Collectors;
 public abstract class AbstractListenNotifyClient extends Thread implements ListenNotifyClient {
 
     /**
-     * Return a raw string directly coming from the database. The expected
+     * Return a raw string directly coming from a channel's payload. The expected
      * format is a JSON compliant string which we can deserialize into
      * {@link Event}.
      */
-    protected abstract String nextRawJson(TableName name);
+    protected abstract String nextRawJson(ChannelName name);
 
     /**
      * The same as {@link nextRawJson} but return a batch containing
@@ -25,23 +25,36 @@ public abstract class AbstractListenNotifyClient extends Thread implements Liste
      * @throws IllegalArgumentException the backing queue has less than
      * {@code noElements} items in it.
      */
-    protected abstract List<String> nextRawJson(TableName name, int noElements);
+    protected abstract List<String> nextRawJson(ChannelName name, int noElements);
 
     private final Gson gson = new Gson();
+    
+    protected CrudClient crudClient;
 
     static protected enum TableName {
         BIN,
         TEXT;
     }
+    
+    static protected enum ChannelName {
+        // Corresponds to any change (INSERT, UPDATE, DELETE) in the text table
+        Q_EVENT,
+        // COrrecsponds to any change in the bin table
+        Q_EVENT_BIN;
+    }
 
+    public void setCrudClient(CrudClient client) {
+        this.crudClient = client;
+    }
+    
     @Override
     public TextEvent nextText() {
-        return gson.fromJson(nextRawJson(TableName.TEXT), TextEvent.class);
+        return gson.fromJson(nextRawJson(ChannelName.Q_EVENT), TextEvent.class);
     }
 
     @Override
     public List<TextEvent> nextText(int count) {
-        return nextRawJson(TableName.TEXT, count)
+        return nextRawJson(ChannelName.Q_EVENT, count)
                 .stream()
                 .parallel()
                 .map(raw -> gson.fromJson(raw, TextEvent.class))
@@ -50,12 +63,12 @@ public abstract class AbstractListenNotifyClient extends Thread implements Liste
 
     @Override
     public BinaryEvent nextBinary() {
-        return gson.fromJson(nextRawJson(TableName.BIN), BinaryEvent.class);
+        return gson.fromJson(nextRawJson(ChannelName.Q_EVENT_BIN), BinaryEvent.class);
     }
 
     @Override
     public List<BinaryEvent> nextBinary(int count) {
-        return nextRawJson(TableName.BIN, count)
+        return nextRawJson(ChannelName.Q_EVENT_BIN, count)
                 .stream()
                 .parallel()
                 .map(raw -> gson.fromJson(raw, BinaryEvent.class))
