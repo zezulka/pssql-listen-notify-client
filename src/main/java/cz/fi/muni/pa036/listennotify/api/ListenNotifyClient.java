@@ -1,6 +1,7 @@
 package cz.fi.muni.pa036.listennotify.api;
 
 import java.io.FileInputStream;
+import java.util.List;
 import java.sql.SQLException;
 
 /**
@@ -13,10 +14,15 @@ import java.sql.SQLException;
 public interface ListenNotifyClient {
 
     /**
-     * Return next event of type {@link ListenNotifyEvent}.
-     * @return the next deserialized notification
+     * Return next event.
      */
     ListenNotifyEvent next();
+    
+    /**
+     * Return next {@code noElements} events.
+     * @throws IllegalArgumentException the backing queue has less than {@code noElements} items in it.
+     */
+    List<ListenNotifyEvent> next(int noelements);
 
     /**
      * Execute any arbitrary SQL statement. Use with care!

@@ -5,8 +5,10 @@ import java.io.FileInputStream;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.List;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * LISTEN / NOTIFY client which implements some of the default behaviours of its
@@ -32,10 +34,25 @@ public abstract class AbstractListenNotifyClient implements ListenNotifyClient {
      * {@link ListenNotifyEvent}.
      */
     protected abstract String nextRawJson();
+    
+    /**
+     * The same as {@link nextRawJson} but return a batch containing {@code noElements} items.
+     * @throws IllegalArgumentException the backing queue has less than {@code noElements} items in it.
+     */
+    protected abstract List<String> nextRawJson(int noElements);
 
     @Override
     public ListenNotifyEvent next() {
         return gson.fromJson(nextRawJson(), ListenNotifyEvent.class);
+    }
+    
+    @Override
+    public List<ListenNotifyEvent> next(int count) {
+        return nextRawJson(count)
+                .stream()
+                .parallel()
+                .map(raw -> gson.fromJson(raw, ListenNotifyEvent.class))
+                .collect(Collectors.toList());
     }
 
     @Override
