@@ -1,4 +1,4 @@
-package cz.fi.muni.pa036.listennotify.api;
+package cz.fi.muni.pa036.listennotify.api.event;
 
 /**
  *

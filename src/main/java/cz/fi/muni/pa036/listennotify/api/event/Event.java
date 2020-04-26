@@ -1,5 +1,7 @@
-package cz.fi.muni.pa036.listennotify.api;
+package cz.fi.muni.pa036.listennotify.api.event;
 
+import cz.fi.muni.pa036.listennotify.api.data.DataRow;
+import cz.fi.muni.pa036.listennotify.api.event.EventType;
 import java.util.Objects;
 
 /**

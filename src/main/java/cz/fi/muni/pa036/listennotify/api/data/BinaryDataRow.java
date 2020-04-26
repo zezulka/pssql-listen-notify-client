@@ -1,6 +1,4 @@
-package cz.fi.muni.pa036.listennotify.api;
-
-import java.util.Objects;
+package cz.fi.muni.pa036.listennotify.api.data;
 
 /**
  * Immutable object representing data row from a binary db table.
@@ -8,23 +6,10 @@ import java.util.Objects;
  *
  * @author Miloslav Zezulka
  */
-public class BinaryDataRow extends DataRow {
-    private final int id;
-    private final byte[] img;
-    
-    public BinaryDataRow(int id, byte[] img) {
-        Objects.requireNonNull(id);
-        Objects.requireNonNull(img);
-        this.id = id;
-        this.img = img;
-    }
+public class BinaryDataRow extends DataRow<byte[]> {
 
-    public int getId() {
-        return id;
-    }
-
-    public byte[] getImg() {
-        return img;
+    public BinaryDataRow(int id, byte[] value) {
+        super(id, value);
     }
     
     @Override
@@ -44,7 +29,7 @@ public class BinaryDataRow extends DataRow {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof TextDataRow)) {
+        if (!(obj instanceof BinaryDataRow)) {
             return false;
         }
         final BinaryDataRow other = (BinaryDataRow) obj;

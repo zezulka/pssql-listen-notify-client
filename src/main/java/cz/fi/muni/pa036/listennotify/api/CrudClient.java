@@ -1,5 +1,6 @@
 package cz.fi.muni.pa036.listennotify.api;
 
+import cz.fi.muni.pa036.listennotify.api.event.EventType;
 import java.io.FileInputStream;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
@@ -9,13 +10,15 @@ import java.util.Map;
 
 /**
  * Client which communicates with the database.
+ *
  * @author mzezulka
  */
 public abstract class CrudClient extends Thread {
-    
+
     protected abstract Statement createStatement();
+
     protected abstract PreparedStatement createPreparedStatement(String query);
-    
+
     private final Map<EventType, PreparedStatement> stmtCache = new HashMap<>();
     private boolean preparedStmtsReady = false;
     private static final String TEXT_TABLE_NAME = "text";
@@ -23,7 +26,7 @@ public abstract class CrudClient extends Thread {
     private static final String INSERT_STMT = "INSERT INTO %s VALUES (?, ?);";
     private static final String DELETE_STMT = "DELETE FROM %s WHERE id=?";
     private static final String UPDATE_STMT = "UPDATE %s SET %s = ? WHERE id=?";
-    
+
     /**
      * Execute any arbitrary SQL statement. Use with care!
      *
@@ -31,18 +34,18 @@ public abstract class CrudClient extends Thread {
      * @throws SQLException
      */
     public void executeStatement(String sqlStmt) throws SQLException {
-        try ( Statement statement = createStatement()) {
+        try (Statement statement = createStatement()) {
             statement.execute(sqlStmt);
         }
     }
 
     /**
-     * 
+     *
      * Insert text data into the database.
-     * 
+     *
      * @param id id, must be unique in the database
      * @param text message to be stored in the table
-     * @throws SQLException 
+     * @throws SQLException
      */
     public void insertText(int id, String text) throws SQLException {
         createPreparedStatementsIfNecessary();
@@ -51,14 +54,14 @@ public abstract class CrudClient extends Thread {
         ps.setString(2, text);
         ps.executeUpdate();
     }
-    
-        /**
-     * 
+
+    /**
+     *
      * Inserts binary stream (most usually an image) into the database.
-     * 
+     *
      * @param id id, must be unique in the database
      * @param fis file of the binary data to be stored
-     * @throws SQLException 
+     * @throws SQLException
      */
     public void insertBinary(int id, FileInputStream fis) throws SQLException {
         createPreparedStatementsIfNecessary();
@@ -69,12 +72,12 @@ public abstract class CrudClient extends Thread {
     }
 
     /**
-     * 
+     *
      * Update text data with id {@code id}.
-     * 
+     *
      * @param id id existing in the text table
      * @param text message to be stored in the table
-     * @throws SQLException 
+     * @throws SQLException
      */
     public void updateText(int id, String text) throws SQLException {
         createPreparedStatementsIfNecessary();
@@ -83,14 +86,14 @@ public abstract class CrudClient extends Thread {
         ps.setInt(2, id);
         ps.executeUpdate();
     }
-    
-        /**
-     * 
+
+    /**
+     *
      * Updates binary stream with id {@code id} into the database.
-     * 
+     *
      * @param id id existing in the binary table
      * @param fis file of the binary data to be stored
-     * @throws SQLException 
+     * @throws SQLException
      */
     public void updateBinary(int id, FileInputStream fis) throws SQLException {
         createPreparedStatementsIfNecessary();
@@ -99,15 +102,15 @@ public abstract class CrudClient extends Thread {
         ps.setInt(2, id);
         ps.executeUpdate();
     }
-    
+
     /**
-     * 
-     * Delete a row from the text table with id {@code id}. As a side effect,
-     * if any row in the binary table references with its FK this id, it will
-     * be deleted as well.
-     * 
+     *
+     * Delete a row from the text table with id {@code id}. As a side effect, if
+     * any row in the binary table references with its FK this id, it will be
+     * deleted as well.
+     *
      * @param id id must exist in the database
-     * @throws SQLException 
+     * @throws SQLException
      */
     public void deleteText(int id) throws SQLException {
         createPreparedStatementsIfNecessary();
@@ -115,11 +118,12 @@ public abstract class CrudClient extends Thread {
         ps.setInt(1, id);
         ps.executeUpdate();
     }
-    
+
     /**
      * Delete a row from the binary table with id {@code id}.
+     *
      * @param id
-     * @throws SQLException 
+     * @throws SQLException
      */
     public void deleteBinary(int id) throws SQLException {
         createPreparedStatementsIfNecessary();
@@ -127,7 +131,7 @@ public abstract class CrudClient extends Thread {
         ps.setInt(1, id);
         ps.executeUpdate();
     }
-    
+
     /**
      * Inform db that the client wishes to accept events of type {@code type}
      * using the command LISTEN &lt;channel&gt;.
@@ -158,21 +162,21 @@ public abstract class CrudClient extends Thread {
             throw new RuntimeException(ex);
         }
     }
-    
-        private void createPreparedStatementsIfNecessary() {
-        if(preparedStmtsReady) {
+
+    private void createPreparedStatementsIfNecessary() {
+        if (preparedStmtsReady) {
             return;
         }
         // prepared statements for the text table
         stmtCache.put(EventType.INSERT_TEXT, createPreparedStatement(String.format(INSERT_STMT, TEXT_TABLE_NAME)));
         stmtCache.put(EventType.DELETE_TEXT, createPreparedStatement(String.format(DELETE_STMT, TEXT_TABLE_NAME)));
         stmtCache.put(EventType.UPDATE_TEXT, createPreparedStatement(String.format(UPDATE_STMT, TEXT_TABLE_NAME, "message")));
-        
+
         // prepared statements for the binary table
         stmtCache.put(EventType.INSERT_BINARY, createPreparedStatement(String.format(INSERT_STMT, BINARY_TABLE_NAME)));
         stmtCache.put(EventType.DELETE_BINARY, createPreparedStatement(String.format(DELETE_STMT, BINARY_TABLE_NAME)));
         stmtCache.put(EventType.UPDATE_BINARY, createPreparedStatement(String.format(UPDATE_STMT, BINARY_TABLE_NAME, "img")));
-        
+
         preparedStmtsReady = true;
     }
 }

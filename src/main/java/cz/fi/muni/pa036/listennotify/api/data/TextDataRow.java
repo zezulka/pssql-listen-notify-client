@@ -1,35 +1,19 @@
-package cz.fi.muni.pa036.listennotify.api;
-
-import java.util.Objects;
+package cz.fi.muni.pa036.listennotify.api.data;
 
 /**
  * Immutable object representing data row from a text db table.
  *
  * @author Miloslav Zezulka
  */
-public class TextDataRow extends DataRow {
-    
-    private final int id;
-    private final String message;
-    
-    public TextDataRow(int id, String message) {
-        Objects.requireNonNull(id);
-        Objects.requireNonNull(message);
-        this.id = id;
-        this.message = message;
-    }
+public class TextDataRow extends DataRow<String> {
 
-    public int getId() {
-        return id;
-    }
-
-    public String getMessage() {
-        return message;
+    public TextDataRow(int id, String value) {
+        super(id, value);
     }
 
     @Override
     public String toString() {
-        return "DataRow{" + "id=" + id + ", message=" + message + '}';
+        return "DataRow{" + "id=" + id + ", message=" + value + '}';
     }
     
     @Override
