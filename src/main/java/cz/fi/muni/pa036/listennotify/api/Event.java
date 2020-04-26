@@ -8,13 +8,13 @@ import java.util.Objects;
  *
  * @author Miloslav Zezulka
  */
-public class ListenNotifyEvent {
+public class Event<T extends DataRow> {
 
     private final String table;
     private final EventType action;
-    private final DataRow data;
+    private final T data;
 
-    public ListenNotifyEvent(String table, EventType action, DataRow data) {
+    public Event(String table, EventType action, T data) {
         Objects.requireNonNull(table);
         Objects.requireNonNull(action);
         Objects.requireNonNull(data);
@@ -31,7 +31,7 @@ public class ListenNotifyEvent {
         return action;
     }
 
-    public DataRow getData() {
+    public T getData() {
         return data;
     }
 
@@ -54,10 +54,10 @@ public class ListenNotifyEvent {
         if (this == obj) {
             return true;
         }
-        if (!(obj instanceof ListenNotifyEvent)) {
+        if (!(obj instanceof Event)) {
             return false;
         }
-        final ListenNotifyEvent other = (ListenNotifyEvent) obj;
+        final Event other = (Event) obj;
         return table.equals(other.table) && action.equals(other.action) && data.equals(other.data);
     }
 
