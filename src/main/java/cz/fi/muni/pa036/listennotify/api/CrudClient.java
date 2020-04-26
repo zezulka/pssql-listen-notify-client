@@ -140,7 +140,11 @@ public abstract class CrudClient extends Thread {
      */
     public void registerEventListener(EventType type) {
         try {
-            executeStatement("LISTEN q_event");
+            if(type == EventType.DELETE_BINARY || type == EventType.INSERT_BINARY || type == EventType.UPDATE_BINARY) {
+                executeStatement("LISTEN q_event_bin");
+            } else {
+                executeStatement("LISTEN q_event");    
+            }
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
@@ -157,7 +161,11 @@ public abstract class CrudClient extends Thread {
      */
     public void deregisterEventListener(EventType type) {
         try {
-            executeStatement("UNLISTEN q_event");
+            if(type == EventType.DELETE_BINARY || type == EventType.INSERT_BINARY || type == EventType.UPDATE_BINARY) {
+                executeStatement("UNLISTEN q_event_bin");
+            } else {
+                executeStatement("UNLISTEN q_event");    
+            }
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
         }
