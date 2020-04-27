@@ -38,4 +38,10 @@ public interface ListenNotifyClient {
      * {@code noElements} items in it.
      */
     List<BinaryEvent> nextBinary(int noelements);
+    
+    /**
+     * Shut down the client, cleaning up all the resources. Since the client
+     * might run as a separate thread, this is an opportunity to terminate it.
+     */
+    void shutdown();
 }
