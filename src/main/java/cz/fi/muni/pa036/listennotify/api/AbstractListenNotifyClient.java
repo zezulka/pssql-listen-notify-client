@@ -1,8 +1,7 @@
 package cz.fi.muni.pa036.listennotify.api;
 
-import cz.fi.muni.pa036.listennotify.api.event.BinaryEvent;
-import cz.fi.muni.pa036.listennotify.api.event.TextEvent;
 import com.google.gson.Gson;
+import cz.fi.muni.pa036.listennotify.api.event.Event;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -48,30 +47,30 @@ public abstract class AbstractListenNotifyClient extends Thread implements Liste
     }
     
     @Override
-    public TextEvent nextText() {
-        return gson.fromJson(nextRawJson(ChannelName.Q_EVENT), TextEvent.class);
+    public Event nextText() {
+        return gson.fromJson(nextRawJson(ChannelName.Q_EVENT), Event.class);
     }
 
     @Override
-    public List<TextEvent> nextText(int count) {
+    public List<Event> nextText(int count) {
         return nextRawJson(ChannelName.Q_EVENT, count)
                 .stream()
                 .parallel()
-                .map(raw -> gson.fromJson(raw, TextEvent.class))
+                .map(raw -> gson.fromJson(raw, Event.class))
                 .collect(Collectors.toList());
     }
 
     @Override
-    public BinaryEvent nextBinary() {
-        return gson.fromJson(nextRawJson(ChannelName.Q_EVENT_BIN), BinaryEvent.class);
+    public Event nextBinary() {
+        return gson.fromJson(nextRawJson(ChannelName.Q_EVENT_BIN), Event.class);
     }
 
     @Override
-    public List<BinaryEvent> nextBinary(int count) {
+    public List<Event> nextBinary(int count) {
         return nextRawJson(ChannelName.Q_EVENT_BIN, count)
                 .stream()
                 .parallel()
-                .map(raw -> gson.fromJson(raw, BinaryEvent.class))
+                .map(raw -> gson.fromJson(raw, Event.class))
                 .collect(Collectors.toList());
     }
 }

@@ -26,7 +26,7 @@ public abstract class CrudClient extends Thread {
     private static final String BINARY_TABLE_NAME = "bin";
     private static final String INSERT_STMT = "INSERT INTO %s VALUES (?, ?);";
     private static final String DELETE_STMT = "DELETE FROM %s WHERE id=?";
-    private static final String UPDATE_STMT = "UPDATE %s SET %s = ? WHERE id=?";
+    private static final String UPDATE_STMT = "UPDATE %s SET value = ? WHERE id=?";
 
     /**
      * Execute any arbitrary SQL statement. Use with care!
@@ -180,12 +180,12 @@ public abstract class CrudClient extends Thread {
         // prepared statements for the text table
         stmtCache.put(EventType.INSERT_TEXT, createPreparedStatement(String.format(INSERT_STMT, TEXT_TABLE_NAME)));
         stmtCache.put(EventType.DELETE_TEXT, createPreparedStatement(String.format(DELETE_STMT, TEXT_TABLE_NAME)));
-        stmtCache.put(EventType.UPDATE_TEXT, createPreparedStatement(String.format(UPDATE_STMT, TEXT_TABLE_NAME, "message")));
+        stmtCache.put(EventType.UPDATE_TEXT, createPreparedStatement(String.format(UPDATE_STMT, TEXT_TABLE_NAME)));
 
         // prepared statements for the binary table
         stmtCache.put(EventType.INSERT_BINARY, createPreparedStatement(String.format(INSERT_STMT, BINARY_TABLE_NAME)));
         stmtCache.put(EventType.DELETE_BINARY, createPreparedStatement(String.format(DELETE_STMT, BINARY_TABLE_NAME)));
-        stmtCache.put(EventType.UPDATE_BINARY, createPreparedStatement(String.format(UPDATE_STMT, BINARY_TABLE_NAME, "img")));
+        stmtCache.put(EventType.UPDATE_BINARY, createPreparedStatement(String.format(UPDATE_STMT, BINARY_TABLE_NAME)));
 
         preparedStmtsReady = true;
     }

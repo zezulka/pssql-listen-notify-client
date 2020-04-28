@@ -1,7 +1,6 @@
 package cz.fi.muni.pa036.listennotify.api.event;
 
-import cz.fi.muni.pa036.listennotify.api.data.DataRow;
-import cz.fi.muni.pa036.listennotify.api.event.EventType;
+import cz.fi.muni.pa036.listennotify.api.DataRow;
 import java.util.Objects;
 
 /**
@@ -10,13 +9,13 @@ import java.util.Objects;
  *
  * @author Miloslav Zezulka
  */
-public class Event<T extends DataRow> {
+public class Event {
 
     private final String table;
     private final EventType action;
-    private final T data;
+    private final DataRow data;
 
-    public Event(String table, EventType action, T data) {
+    public Event(String table, EventType action, DataRow data) {
         Objects.requireNonNull(table);
         Objects.requireNonNull(action);
         Objects.requireNonNull(data);
@@ -33,7 +32,7 @@ public class Event<T extends DataRow> {
         return action;
     }
 
-    public T getData() {
+    public DataRow getData() {
         return data;
     }
 

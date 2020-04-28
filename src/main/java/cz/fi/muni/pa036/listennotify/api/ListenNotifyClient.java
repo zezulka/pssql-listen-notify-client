@@ -1,7 +1,5 @@
 package cz.fi.muni.pa036.listennotify.api;
-
-import cz.fi.muni.pa036.listennotify.api.event.BinaryEvent;
-import cz.fi.muni.pa036.listennotify.api.event.TextEvent;
+import cz.fi.muni.pa036.listennotify.api.event.Event;
 import java.util.List;
 
 /**
@@ -16,7 +14,7 @@ public interface ListenNotifyClient {
     /**
      * Return next event from the text database.
      */
-    TextEvent nextText();
+    Event nextText();
 
     /**
      * Return next {@code noElements} events from the text database.
@@ -24,12 +22,12 @@ public interface ListenNotifyClient {
      * @throws IllegalArgumentException the backing queue has less than
      * {@code noElements} items in it.
      */
-    List<TextEvent> nextText(int noelements);
+    List<Event> nextText(int noelements);
 
     /**
      * Return next event from the binary database.
      */
-    BinaryEvent nextBinary();
+    Event nextBinary();
 
     /**
      * Return next {@code noElements} events from the binary database.
@@ -37,11 +35,5 @@ public interface ListenNotifyClient {
      * @throws IllegalArgumentException the backing queue has less than
      * {@code noElements} items in it.
      */
-    List<BinaryEvent> nextBinary(int noelements);
-    
-    /**
-     * Shut down the client, cleaning up all the resources. Since the client
-     * might run as a separate thread, this is an opportunity to terminate it.
-     */
-    void shutdown();
+    List<Event> nextBinary(int noelements);
 }
