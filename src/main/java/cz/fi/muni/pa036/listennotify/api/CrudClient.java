@@ -1,20 +1,30 @@
 package cz.fi.muni.pa036.listennotify.api;
 
 import cz.fi.muni.pa036.listennotify.api.event.EventType;
+import java.io.BufferedReader;
+import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
+import java.io.IOException;
+import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-
+import org.postgresql.copy.CopyIn;
+import org.postgresql.copy.CopyManager;
+import org.postgresql.core.BaseConnection;
 /**
  * Client which communicates with the database.
  *
  * @author mzezulka
  */
 public abstract class CrudClient extends Thread {
+
+    protected abstract Connection getConnection();
 
     protected abstract Statement createStatement();
 
@@ -25,8 +35,8 @@ public abstract class CrudClient extends Thread {
     private static final String TEXT_TABLE_NAME = "text";
     private static final String BINARY_TABLE_NAME = "bin";
     private static final String INSERT_STMT = "INSERT INTO %s VALUES (?, ?);";
-    private static final String DELETE_STMT = "DELETE FROM %s WHERE id=?";
-    private static final String UPDATE_STMT = "UPDATE %s SET value = ? WHERE id=?";
+    private static final String DELETE_STMT = "DELETE FROM %s WHERE id=?;";
+    private static final String UPDATE_STMT = "UPDATE %s SET value = ? WHERE id=?;";
 
     /**
      * Execute any arbitrary SQL statement. Use with care!
@@ -37,6 +47,23 @@ public abstract class CrudClient extends Thread {
     public void executeStatement(String sqlStmt) throws SQLException {
         try (Statement statement = createStatement()) {
             statement.execute(sqlStmt);
+        }
+    }
+
+    /**
+     * Insert a thousand rows using the COPY Postgre-specific command.
+     */
+    public void insertBulkText() throws SQLException {
+        try {
+            Long ci = new CopyManager((BaseConnection) getConnection())
+                    .copyIn(
+                            String.format("COPY text FROM STDIN (FORMAT csv, HEADER);"),
+                            new BufferedReader(new FileReader(System.getProperty("user.dir") + File.separator + "data"
+                                + File.separator + "batch.csv"))
+                    );
+            Logger.getGlobal().info(String.format("Inserted %d rows.", ci));
+        } catch (IOException ex) {
+            throw new RuntimeException(ex);
         }
     }
 
@@ -142,10 +169,10 @@ public abstract class CrudClient extends Thread {
     public void registerEventListener(EventType type) {
         Logger.getGlobal().info("Registering event listening for " + type);
         try {
-            if(type == EventType.DELETE_BINARY || type == EventType.INSERT_BINARY || type == EventType.UPDATE_BINARY) {
+            if (type == EventType.DELETE_BINARY || type == EventType.INSERT_BINARY || type == EventType.UPDATE_BINARY) {
                 executeStatement("LISTEN q_event_bin");
             } else {
-                executeStatement("LISTEN q_event");    
+                executeStatement("LISTEN q_event");
             }
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
@@ -163,10 +190,10 @@ public abstract class CrudClient extends Thread {
      */
     public void deregisterEventListener(EventType type) {
         try {
-            if(type == EventType.DELETE_BINARY || type == EventType.INSERT_BINARY || type == EventType.UPDATE_BINARY) {
+            if (type == EventType.DELETE_BINARY || type == EventType.INSERT_BINARY || type == EventType.UPDATE_BINARY) {
                 executeStatement("UNLISTEN q_event_bin");
             } else {
-                executeStatement("UNLISTEN q_event");    
+                executeStatement("UNLISTEN q_event");
             }
         } catch (SQLException ex) {
             throw new RuntimeException(ex);
