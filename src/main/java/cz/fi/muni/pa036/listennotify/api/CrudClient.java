@@ -4,7 +4,6 @@ import cz.fi.muni.pa036.listennotify.api.event.EventType;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileInputStream;
-import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
 import java.sql.Connection;
@@ -14,7 +13,6 @@ import java.sql.Statement;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
-import org.postgresql.copy.CopyIn;
 import org.postgresql.copy.CopyManager;
 import org.postgresql.core.BaseConnection;
 /**
@@ -167,7 +165,7 @@ public abstract class CrudClient extends Thread {
      * @param type type of event the user wishes to listen to
      */
     public void registerEventListener(EventType type) {
-        Logger.getGlobal().info("Registering event listening for " + type);
+        Logger.getGlobal().info(Thread.currentThread().getName() + "Registering event listening for " + type);
         try {
             if (type == EventType.DELETE_BINARY || type == EventType.INSERT_BINARY || type == EventType.UPDATE_BINARY) {
                 executeStatement("LISTEN q_event_bin");
